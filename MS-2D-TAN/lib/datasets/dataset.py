@@ -10,6 +10,7 @@ import torchtext
 import torchvision
 import numpy as np
 from core.utils import iou, ioa
+from bpemb import BPEmb
 import h5py
 import torch.nn.functional as F
 import random
@@ -128,6 +129,8 @@ class MomentLocalizationDataset(DatasetBase):
         vocab.stoi['<unk>'] = vocab.vectors.shape[0]
         vocab.vectors = torch.cat([vocab.vectors, torch.zeros(1, vocab.dim)], dim=0)
         word_embedding = nn.Embedding.from_pretrained(vocab.vectors)
+
+        self.bpemb = BPEmb(lang="en", dim=300, cache_dir=os.path.join(self.cfg.DATA_DIR, '.subword_cache'))        
         self.vocab = vocab
         self.word_embedding = word_embedding
 
@@ -136,7 +139,10 @@ class MomentLocalizationDataset(DatasetBase):
             word_idxs = torch.tensor([self.vocab.stoi.get(w.lower(), 400000) for w in description.split()],
                                      dtype=torch.long)
             word_vectors = self.word_embedding(word_idxs)
-        else:
+        elif self.cfg.TXT_INPUT_TYPE == 'BPE':
+            word_idxs = torch.tensor(self.bpemb.encode(description), dtype=torch.long)
+            word_vectors = torch.tensor(self.bpemb.embed(description), dtype=torch.long)
+        else :
             raise NotImplementedError
         return word_vectors, torch.ones(word_vectors.shape[0], 1)
 

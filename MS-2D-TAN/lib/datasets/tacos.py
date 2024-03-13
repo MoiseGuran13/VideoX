@@ -8,6 +8,7 @@ from torch import nn
 import torch.nn.functional as F
 import torch.utils.data as data
 import torchtext
+from bpemb import BPEmb
 
 from . import average_to_fixed_length
 from core.eval import iou
@@ -20,11 +21,13 @@ class TACoS(data.Dataset):
     vocab.stoi['<unk>'] = vocab.vectors.shape[0]
     vocab.vectors = torch.cat([vocab.vectors, torch.zeros(1, vocab.dim)], dim=0)
     word_embedding = nn.Embedding.from_pretrained(vocab.vectors)
+    bpemb_en = BPEmb(lang="en", dim=300, cache_dir=os.path.join(self.cfg.DATA_DIR, '.subword_cache'))   
 
     def __init__(self, split):
         super(TACoS, self).__init__()
 
         self.vis_input_type = config.DATASET.VIS_INPUT_TYPE
+        self.txt_type = config.DATASET.TXT_INPUT_TYPE
         self.data_dir = config.DATA_DIR
         self.split = split
 
@@ -52,8 +55,14 @@ class TACoS(data.Dataset):
         sentence = self.annotations[index]['description']
         duration = self.annotations[index]['duration']
 
-        word_idxs = torch.tensor([self.vocab.stoi.get(w.lower(), 400000) for w in sentence.split()], dtype=torch.long)
-        word_vectors = self.word_embedding(word_idxs)
+        if self.txt_type == 'glove':
+            word_idxs = torch.tensor([self.vocab.stoi.get(w.lower(), 400000) for w in sentence.split()], dtype=torch.long)
+            word_vectors = self.word_embedding(word_idxs)
+        elif self.txt_type == 'BPE':
+            word_idxs = torch.tensor(self.bpemb_en.encode(sentence), dtype=torch.long)
+            word_vectors = torch.tensor(self.bpemb_en.embed(sentence), dtype=torch.long)
+        else:
+            raise NotImplemented
 
         visual_input, visual_mask = self.get_video_features(video_id)
 

@@ -6,7 +6,7 @@ LOG_DIR: ./log
 
 DATASET:
   NAME: charades
-  DATA_DIR: data/Charades-STA
+  DATA_DIR: /user/home/tx19340/mproject/VideoX/MS-2D-TAN/data/Charades-STA
   VIS_INPUT_TYPE: vgg_rgb_features
   TXT_INPUT_TYPE: glove
   NO_VAL: True
@@ -50,7 +50,7 @@ MODEL:
   PARAMS:
     NUM_SCALES: 3
 
-  CHECKPOINT: release_checkpoints/charades/MS-2D-TAN-G-VGG/epoch0004-0.4565-0.8339.pkl
+  CHECKPOINT: /user/home/tx19340/mproject/VideoX/MS-2D-TAN/release_checkpoints/charades/MS-2D-TAN-G-VGG/epoch0004-0.4565-0.8339.pkl
 
   CLIP_MODULE:
     NAME: ClipAvgPool

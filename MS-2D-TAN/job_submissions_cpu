@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#SBATCH --job-name=ms2dtan
+#SBATCH --time=03:00:00
+#SBATCH --nodes=1
+#SBATCH --partition=teach_cpu
+#SBATCH --cpus-per-task=1
+#SBATCH --account=COMS031424
+#SBATCH --mem=50G
+#SBATCH -o ./outcome/log_%j.out
+
+module load languages/anaconda3/2019.10-3.7.4-tflow-2.1.0
+python moment_localization/run.py --cfg experiments/tacos/MS-2D-TAN-G-VGG.yaml --verbose --tag base --workers 1

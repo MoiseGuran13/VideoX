@@ -242,7 +242,6 @@ def test_epoch(test_loader, model, verbose=False, save_results=False):
 
 
 def train(cfg, verbose):
-
     logger, final_output_dir = create_logger(cfg, args.cfg, cfg.TAG)
     logger.info('\n'+pprint.pformat(args))
     logger.info('\n' + pprint.pformat(cfg))
@@ -299,6 +298,7 @@ def train(cfg, verbose):
                              collate_fn=collate_fn)
 
     for cur_epoch in range(init_epoch, cfg.TRAIN.MAX_EPOCH):
+        torch.cuda.empty_cache()
         train_avg_loss, train_result = train_epoch(train_loader, model, optimizer, verbose)
         loss_message = '\nepoch: {} train loss {:.4f}'.format(cur_epoch, train_avg_loss)
         table_message = '\n' + eval.display_results(train_result, 'performance on training set')
