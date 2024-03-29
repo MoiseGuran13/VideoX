@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #SBATCH --job-name=ms2dtan
-#SBATCH --time=24:00:00
+#SBATCH --time=03:00:00
 #SBATCH --nodes=1
-#SBATCH --partition=gpu
+#SBATCH --partition=gpu_veryshort
 #SBATCH --gres=gpu:2
 #SBATCH --account=coms030144
 #SBATCH --mem=0
 #SBATCH -o ./outcome/log_%j.out
 
 module load languages/anaconda3/2019.10-3.7.4-tflow-2.1.0
-python moment_localization/run.py --cfg experiments/tacos/MS-2D-TAN-G-VGG.yaml --verbose --tag base --workers 1
+python moment_localization/run.py --cfg experiments/tacos/MS-2D-TAN-G-VGG.yaml --verbose --split test --mode test --workers 1

@@ -10,7 +10,6 @@ import torchtext
 import torchvision
 import numpy as np
 from core.utils import iou, ioa
-from bpemb import BPEmb
 import h5py
 import torch.nn.functional as F
 import random
@@ -130,19 +129,18 @@ class MomentLocalizationDataset(DatasetBase):
         vocab.vectors = torch.cat([vocab.vectors, torch.zeros(1, vocab.dim)], dim=0)
         word_embedding = nn.Embedding.from_pretrained(vocab.vectors)
 
-        self.bpemb = BPEmb(lang="en", dim=300, cache_dir=os.path.join(self.cfg.DATA_DIR, '.subword_cache'))        
         self.vocab = vocab
         self.word_embedding = word_embedding
 
-    def get_sentence_features(self, description):
+    def get_sentence_features(self, index):
         if self.cfg.TXT_INPUT_TYPE == 'glove':
+            description = self.annotations[index]['description']
             word_idxs = torch.tensor([self.vocab.stoi.get(w.lower(), 400000) for w in description.split()],
                                      dtype=torch.long)
             word_vectors = self.word_embedding(word_idxs)
-        elif self.cfg.TXT_INPUT_TYPE == 'BPE':
-            word_idxs = torch.tensor(self.bpemb.encode(description), dtype=torch.long)
-            word_vectors = torch.tensor(self.bpemb.embed(description), dtype=torch.long)
-        else :
+        elif self.cfg.TXT_INPUT_TYPE == "bpe":
+            word_vectors = torch.tensor(self.annotations[index]['indices'], dtype=torch.float)
+        else:
             raise NotImplementedError
         return word_vectors, torch.ones(word_vectors.shape[0], 1)
 
@@ -191,12 +189,14 @@ class MomentLocalizationDataset(DatasetBase):
         self.annotations = anno_pairs
 
     def get_tacos_annotations(self):
-        with open(os.path.join(self.cfg.DATA_DIR, '{}.json'.format(self.split)),'r') as f:
+        split = '{}_subwords.json'
+        with open(os.path.join(self.cfg.DATA_DIR, split.format(self.split)),'r') as f:
             annotations = json.load(f)
         anno_pairs = []
         for vid, video_anno in annotations.items():
             duration = video_anno['num_frames']/video_anno['fps']
-            for timestamp, sentence in zip(video_anno['timestamps'], video_anno['sentences']):
+            for timestamp, sentence, indices, tokens in (
+                    zip(video_anno['timestamps'], video_anno['sentences'], video_anno['indices'], video_anno['tokens'])):
                 if timestamp[0] < timestamp[1]:
                     anno_pairs.append(
                         {
@@ -204,6 +204,7 @@ class MomentLocalizationDataset(DatasetBase):
                             'duration': duration,
                             'times':[max(timestamp[0]/video_anno['fps'],0),min(timestamp[1]/video_anno['fps'],duration)],
                             'description':' '.join(word_tokenize(sentence)),
+                            'indices': np.reshape(np.array(indices), (-1, 300)),
                         }
                     )
         self.annotations = anno_pairs
@@ -219,7 +220,7 @@ class MomentLocalizationDataset(DatasetBase):
         duration = self.annotations[index]['duration']
         time_unit = self.cfg.TIME_UNIT
 
-        word_vectors, txt_mask = self.get_sentence_features(description)
+        word_vectors, txt_mask = self.get_sentence_features(index)
         video_features, vis_mask = self.get_video_features(video_id)
 
         num_clips = video_features.shape[0]
@@ -349,7 +350,7 @@ class MomentLocalizationDataset(DatasetBase):
         description = self.annotations[index]['description']
         duration = self.annotations[index]['duration']
 
-        word_vectors, txt_mask = self.get_sentence_features(description)
+        word_vectors, txt_mask = self.get_sentence_features(index)
         video_features, vis_mask = self.get_video_features(video_id)
         video_features = feature_temporal_sampling(self.cfg.INPUT_NUM_CLIPS, video_features)
         vis_mask = feature_temporal_sampling(self.cfg.INPUT_NUM_CLIPS, vis_mask)

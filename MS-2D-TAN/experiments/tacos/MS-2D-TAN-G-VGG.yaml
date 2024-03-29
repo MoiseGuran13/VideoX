@@ -29,7 +29,7 @@ OPTIM:
 TRAIN:
   BATCH_SIZE: 32
   MAX_EPOCH: 100
-  CONTINUE: True
+  CONTINUE: False
 
 LOSS:
   NAME: bce_rescale_loss
@@ -50,7 +50,7 @@ MODEL:
   PARAMS:
     NUM_SCALES: 3
 
-  CHECKPOINT: /user/home/tx19340/mproject/VideoX/MS-2D-TAN/checkpoints/tacos/MS-2D-TAN-G-VGG/epoch0012-0.4361-0.6931.pkl
+  CHECKPOINT: /user/home/tx19340/mproject/VideoX/MS-2D-TAN/checkpoints/tacos/MS-2D-TAN-G-VGG/epoch0028-0.4764-0.7636.pkl
 
   CLIP_MODULE:
     NAME: ClipAvgPool
