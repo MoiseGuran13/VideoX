@@ -242,7 +242,7 @@ def test_epoch(test_loader, model, verbose=False, save_results=False):
 
 
 def train(cfg, verbose):
-    logger, final_output_dir = create_logger(cfg, args.cfg, cfg.TAG)
+    logger, final_output_dir, run_number = create_logger(cfg, args.cfg)
     logger.info('\n'+pprint.pformat(args))
     logger.info('\n' + pprint.pformat(cfg))
 
@@ -316,9 +316,8 @@ def train(cfg, verbose):
         logger.info(message)
 
         if not args.no_save:
-            saved_model_filename = os.path.join(cfg.MODEL_DIR, '{}/{}/epoch{:04d}-{:.4f}-{:.4f}.pkl'.format(
-                cfg.DATASET.NAME, os.path.basename(args.cfg).split('.yaml')[0],
-                cur_epoch, test_result['ranks'][0,0], test_result['ranks'][0,1]))
+            saved_model_filename = os.path.join(cfg.MODEL_DIR, 'run-{:04d}_epoch-{:04d}.pkl'.format(run_number,
+                                                                                                    cur_epoch))
 
             rootfolder1 = os.path.dirname(saved_model_filename)
             rootfolder2 = os.path.dirname(rootfolder1)

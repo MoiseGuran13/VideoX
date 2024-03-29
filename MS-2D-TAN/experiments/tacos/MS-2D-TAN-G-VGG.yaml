@@ -50,7 +50,7 @@ MODEL:
   PARAMS:
     NUM_SCALES: 3
 
-  CHECKPOINT: /user/home/tx19340/mproject/VideoX/MS-2D-TAN/checkpoints/tacos/MS-2D-TAN-G-VGG/epoch0028-0.4764-0.7636.pkl
+  CHECKPOINT: /user/home/tx19340/mproject/VideoX/MS-2D-TAN/checkpoints/tacos/MS-2D-TAN-G-VGG/run-0000_epoch-0035.pkl
 
   CLIP_MODULE:
     NAME: ClipAvgPool

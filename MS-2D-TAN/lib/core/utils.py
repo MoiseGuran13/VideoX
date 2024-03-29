@@ -24,7 +24,7 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-def create_logger(cfg, cfg_name, tag='train'):
+def create_logger(cfg, cfg_name):
     root_log_dir = Path(cfg.LOG_DIR)
     # set up logger
     if not root_log_dir.exists():
@@ -40,7 +40,10 @@ def create_logger(cfg, cfg_name, tag='train'):
     final_log_dir.mkdir(parents=True, exist_ok=True)
 
     time_str = time.strftime('%Y-%m-%d-%H-%M')
-    log_file = '{}_{}_{}.log'.format(cfg_name, time_str, tag)
+    i = 0
+    while os.path.exists(os.path.join(final_log_dir, 'run-{:04d}.log'.format(i))):
+        i += 1
+    log_file = 'run-{:04d}.log'.format(i)
     final_log_file = final_log_dir / log_file
     head = '%(asctime)-15s %(message)s'
     logging.basicConfig(filename=str(final_log_file), format=head)
@@ -49,7 +52,7 @@ def create_logger(cfg, cfg_name, tag='train'):
     console = logging.StreamHandler()
     logging.getLogger('').addHandler(console)
 
-    return logger, str(final_log_dir)
+    return logger, str(final_log_dir), i
 
 import numpy as np
 def iou(pred, gt): # require pred and gt is numpy
